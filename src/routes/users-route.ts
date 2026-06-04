@@ -12,8 +12,9 @@ export const usersRoute = new Elysia({ prefix: "/api" })
         set.status = 400;
         return { error: error.message };
       }
+      console.error("Error during registration:", error);
       set.status = 500;
-      return { error: "Internal Server Error" };
+      return { error: "Internal Server Error", detail: error.message };
     }
   }, {
     body: t.Object({
