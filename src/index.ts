@@ -2,8 +2,10 @@ import { Elysia, t } from "elysia";
 import { db } from "./db";
 import { users } from "./db/schema";
 import { eq } from "drizzle-orm";
+import { usersRoute } from "./routes/users-route";
 
 const app = new Elysia()
+  .use(usersRoute)
   // Health check endpoint
   .get("/", () => ({
     status: "ok",
@@ -34,26 +36,6 @@ const app = new Elysia()
         } catch (error: any) {
           return { success: false, error: error.message };
         }
-      })
-
-      // Create new user
-      .post("/", async ({ body }) => {
-        try {
-          await db.insert(users).values({
-            name: body.name,
-            email: body.email,
-            bio: body.bio,
-          });
-          return { success: true, message: "User created successfully" };
-        } catch (error: any) {
-          return { success: false, error: error.message };
-        }
-      }, {
-        body: t.Object({
-          name: t.String(),
-          email: t.String({ format: 'email' }),
-          bio: t.Optional(t.String()),
-        })
       })
 
       // Delete user
