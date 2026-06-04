@@ -1,5 +1,5 @@
 import { db } from "../db";
-import { users } from "../db/schema";
+import { users, sessions } from "../db/schema";
 import { eq } from "drizzle-orm";
 import * as bcrypt from "bcrypt";
 
@@ -22,4 +22,30 @@ export const registerUser = async (payload: typeof users.$inferInsert) => {
   });
 
   return "OK";
+};
+
+export const loginUser = async (payload: Pick<typeof users.$inferInsert, "email" | "password">) => {
+  // Cari user berdasarkan email
+  const [user] = await db.select().from(users).where(eq(users.email, payload.email));
+  
+  if (!user) {
+    throw new Error("email atau password salah");
+  }
+
+  // Bandingkan password
+  const isPasswordValid = await bcrypt.compare(payload.password, user.password);
+  if (!isPasswordValid) {
+    throw new Error("email atau password salah");
+  }
+
+  // Buat session token
+  const token = crypto.randomUUID();
+
+  // Simpan ke database
+  await db.insert(sessions).values({
+    token: token,
+    userId: user.id,
+  });
+
+  return token;
 };
