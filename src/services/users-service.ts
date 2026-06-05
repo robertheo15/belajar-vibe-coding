@@ -49,3 +49,29 @@ export const loginUser = async (payload: Pick<typeof users.$inferInsert, "email"
 
   return token;
 };
+
+export const getCurrentUser = async (token: string) => {
+  const result = await db
+    .select({
+      id: users.id,
+      name: users.name,
+      email: users.email,
+      createdAt: users.createdAt,
+    })
+    .from(sessions)
+    .innerJoin(users, eq(sessions.userId, users.id))
+    .where(eq(sessions.token, token))
+    .limit(1);
+
+  const sessionUser = result[0];
+  if (!sessionUser) {
+    throw new Error("unauthorized");
+  }
+
+  return {
+    id: sessionUser.id,
+    name: sessionUser.name,
+    email: sessionUser.email,
+    created_at: sessionUser.createdAt,
+  };
+};
