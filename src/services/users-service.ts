@@ -75,3 +75,13 @@ export const getCurrentUser = async (token: string) => {
     created_at: sessionUser.createdAt,
   };
 };
+
+export const logout = async (token: string) => {
+  const [result] = await db.delete(sessions).where(eq(sessions.token, token));
+  if (result.affectedRows === 0) {
+    throw new Error("unauthorized");
+  }
+
+  return "OK";
+};
+
