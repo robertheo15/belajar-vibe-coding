@@ -16,7 +16,7 @@ describe("User API", () => {
   beforeAll(async () => {
     // Clean up potential leftover user
     const userList = await db.select().from(users).where(eq(users.email, email));
-    if (userList.length > 0) {
+    if (userList.length > 0 && userList[0]) {
       const userId = userList[0].id;
       await db.delete(sessions).where(eq(sessions.userId, userId));
       await db.delete(users).where(eq(users.id, userId));
@@ -26,7 +26,7 @@ describe("User API", () => {
   afterAll(async () => {
     // Clean up created user and sessions
     const userList = await db.select().from(users).where(eq(users.email, email));
-    if (userList.length > 0) {
+    if (userList.length > 0 && userList[0]) {
       const userId = userList[0].id;
       await db.delete(sessions).where(eq(sessions.userId, userId));
       await db.delete(users).where(eq(users.id, userId));
@@ -42,7 +42,7 @@ describe("User API", () => {
       })
     );
     expect(response.status).toBe(201);
-    const body = await response.json();
+    const body = (await response.json()) as any;
     expect(body).toEqual({ data: "OK" });
   });
 
@@ -55,7 +55,7 @@ describe("User API", () => {
       })
     );
     expect(response.status).toBe(200);
-    const body = await response.json();
+    const body = (await response.json()) as any;
     expect(body.data).toBeDefined();
     token = body.data;
   });
@@ -68,7 +68,7 @@ describe("User API", () => {
       })
     );
     expect(response.status).toBe(200);
-    const body = await response.json();
+    const body = (await response.json()) as any;
     expect(body.data.email).toBe(email);
     expect(body.data.name).toBe(name);
   });
@@ -81,7 +81,7 @@ describe("User API", () => {
       })
     );
     expect(response.status).toBe(200);
-    const body = await response.json();
+    const body = (await response.json()) as any;
     expect(body).toEqual({ data: "OK" });
   });
 
@@ -93,7 +93,7 @@ describe("User API", () => {
       })
     );
     expect(response.status).toBe(401);
-    const body = await response.json();
+    const body = (await response.json()) as any;
     expect(body).toEqual({ error: "unauthorized" });
   });
 
@@ -105,7 +105,7 @@ describe("User API", () => {
       })
     );
     expect(response.status).toBe(401);
-    const body = await response.json();
+    const body = (await response.json()) as any;
     expect(body).toEqual({ error: "unauthorized" });
   });
 });
