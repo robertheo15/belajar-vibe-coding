@@ -46,6 +46,18 @@ describe("User API", () => {
     expect(body).toEqual({ data: "OK" });
   });
 
+  it("should not register a user with a name longer than 255 characters", async () => {
+    const longName = "A".repeat(300);
+    const response = await app.handle(
+      new Request("http://localhost/api/users", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name: longName, email: `longname@example.com`, password }),
+      })
+    );
+    expect(response.status).toBe(422);
+  });
+
   it("should login the user and return a token", async () => {
     const response = await app.handle(
       new Request("http://localhost/api/users/login", {
