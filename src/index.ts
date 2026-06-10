@@ -3,8 +3,21 @@ import { db } from "./db";
 import { users } from "./db/schema";
 import { eq } from "drizzle-orm";
 import { usersRoute } from "./routes/users-route";
+import { swagger } from "@elysiajs/swagger";
 
 export const app = new Elysia()
+  .use(
+    swagger({
+      path: "/swagger",
+      documentation: {
+        info: {
+          title: "Belajar Part 1 API Documentation",
+          version: "1.0.0",
+          description: "Dokumentasi API untuk project Belajar Part 1",
+        },
+      },
+    })
+  )
   .use(usersRoute)
   // Health check endpoint
   .get("/", () => ({
@@ -22,6 +35,27 @@ export const app = new Elysia()
           return { success: true, data: allUsers };
         } catch (error: any) {
           return { success: false, error: error.message };
+        }
+      }, {
+        response: {
+          200: t.Object({
+            success: t.Boolean({ default: true }),
+            data: t.Array(t.Object({
+              id: t.Numeric({ default: 1 }),
+              name: t.String({ default: "John Doe" }),
+              email: t.String({ default: "johndoe@example.com" }),
+              password: t.String({ default: "$2b$10$xyz..." }),
+              createdAt: t.Nullable(t.String({ default: "2026-06-10T02:00:00.000Z" }))
+            }))
+          }),
+          500: t.Object({
+            success: t.Boolean({ default: false }),
+            error: t.String({ default: "Internal Server Error" })
+          })
+        },
+        detail: {
+          summary: "Mendapatkan semua daftar user",
+          tags: ["Users"]
         }
       })
 
@@ -43,6 +77,38 @@ export const app = new Elysia()
           set.status = 500;
           return { success: false, error: error.message };
         }
+      }, {
+        params: t.Object({
+          id: t.String({ default: "1" })
+        }),
+        response: {
+          200: t.Object({
+            success: t.Boolean({ default: true }),
+            data: t.Object({
+              id: t.Numeric({ default: 1 }),
+              name: t.String({ default: "John Doe" }),
+              email: t.String({ default: "johndoe@example.com" }),
+              password: t.String({ default: "$2b$10$xyz..." }),
+              createdAt: t.Nullable(t.String({ default: "2026-06-10T02:00:00.000Z" }))
+            })
+          }),
+          400: t.Object({
+            success: t.Boolean({ default: false }),
+            error: t.String({ default: "Invalid ID parameter" })
+          }),
+          404: t.Object({
+            success: t.Boolean({ default: false }),
+            message: t.String({ default: "User not found" })
+          }),
+          500: t.Object({
+            success: t.Boolean({ default: false }),
+            error: t.String({ default: "Internal Server Error" })
+          })
+        },
+        detail: {
+          summary: "Mendapatkan detail user berdasarkan ID",
+          tags: ["Users"]
+        }
       })
 
       // Delete user
@@ -63,6 +129,32 @@ export const app = new Elysia()
         } catch (error: any) {
           set.status = 500;
           return { success: false, error: error.message };
+        }
+      }, {
+        params: t.Object({
+          id: t.String({ default: "1" })
+        }),
+        response: {
+          200: t.Object({
+            success: t.Boolean({ default: true }),
+            message: t.String({ default: "User with ID 1 deleted successfully" })
+          }),
+          400: t.Object({
+            success: t.Boolean({ default: false }),
+            error: t.String({ default: "Invalid ID parameter" })
+          }),
+          404: t.Object({
+            success: t.Boolean({ default: false }),
+            message: t.String({ default: "User not found" })
+          }),
+          500: t.Object({
+            success: t.Boolean({ default: false }),
+            error: t.String({ default: "Internal Server Error" })
+          })
+        },
+        detail: {
+          summary: "Menghapus user berdasarkan ID",
+          tags: ["Users"]
         }
       })
   )
