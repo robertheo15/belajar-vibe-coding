@@ -3,8 +3,21 @@ import { db } from "./db";
 import { users } from "./db/schema";
 import { eq } from "drizzle-orm";
 import { usersRoute } from "./routes/users-route";
+import { swagger } from "@elysiajs/swagger";
 
 export const app = new Elysia()
+  .use(
+    swagger({
+      path: "/swagger",
+      documentation: {
+        info: {
+          title: "Belajar Part 1 API Documentation",
+          version: "1.0.0",
+          description: "Dokumentasi API untuk project Belajar Part 1",
+        },
+      },
+    })
+  )
   .use(usersRoute)
   // Health check endpoint
   .get("/", () => ({
