@@ -4,7 +4,7 @@ import { users } from "./db/schema";
 import { eq } from "drizzle-orm";
 import { usersRoute } from "./routes/users-route";
 
-const app = new Elysia()
+export const app = new Elysia()
   .use(usersRoute)
   // Health check endpoint
   .get("/", () => ({
@@ -26,24 +26,42 @@ const app = new Elysia()
       })
 
       // Get user by ID
-      .get("/:id", async ({ params: { id } }) => {
+      .get("/:id", async ({ params: { id }, set }) => {
         try {
-          const userList = await db.select().from(users).where(eq(users.id, Number(id)));
+          const numericId = Number(id);
+          if (isNaN(numericId)) {
+            set.status = 400;
+            return { success: false, error: "Invalid ID parameter" };
+          }
+          const userList = await db.select().from(users).where(eq(users.id, numericId));
           if (userList.length === 0) {
+            set.status = 404;
             return { success: false, message: "User not found" };
           }
           return { success: true, data: userList[0] };
         } catch (error: any) {
+          set.status = 500;
           return { success: false, error: error.message };
         }
       })
 
       // Delete user
-      .delete("/:id", async ({ params: { id } }) => {
+      .delete("/:id", async ({ params: { id }, set }) => {
         try {
-          await db.delete(users).where(eq(users.id, Number(id)));
+          const numericId = Number(id);
+          if (isNaN(numericId)) {
+            set.status = 400;
+            return { success: false, error: "Invalid ID parameter" };
+          }
+          const userList = await db.select().from(users).where(eq(users.id, numericId));
+          if (userList.length === 0) {
+            set.status = 404;
+            return { success: false, message: "User not found" };
+          }
+          await db.delete(users).where(eq(users.id, numericId));
           return { success: true, message: `User with ID ${id} deleted successfully` };
         } catch (error: any) {
+          set.status = 500;
           return { success: false, error: error.message };
         }
       })
